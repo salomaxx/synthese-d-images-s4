@@ -1,9 +1,19 @@
+#include <cstddef>
 #include "glimac/default_shader.hpp"
+#include "glm/ext/scalar_constants.hpp"
+#include "glm/glm.hpp"
 #include "p6/p6.h"
+
+struct Vertex2DColor {
+    glm::vec2 position;
+    glm::vec3 color;
+};
+
+static constexpr int N = 50;
 
 int main()
 {
-    auto ctx = p6::Context{{1280, 720, "TP3 EX1"}};
+    auto ctx = p6::Context{{1280, 720, "TP3 EX5"}};
     ctx.maximize_window();
 
     // shader
@@ -19,15 +29,16 @@ int main()
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo); // binding
 
-    // on créé un tableau avec les coordonnées du triangle
-    GLfloat vertices[] = {
-        -0.5f, -0.5f, 1.f, 1.f, 0.f,
-        0.5f, -0.5f, 0.f, 1.f, 1.f,
-        0.0f, 0.5f, 1.f, 0.f, 1.f
-    };
-
+    // on créé un vecteur avec les coordonnées du triangle
+    std::vector<Vertex2DColor> vertices;
+    for (int i = 0; i < N ; i ++)
+    {
+        vertices.push_back(Vertex2DColor{{0.f, 0.f}, {1.f, 1.f, 0.2f}});
+        vertices.push_back(Vertex2DColor{{0.5 * glm::cos(2 * glm::pi<float>() / N * i), 0.5 * glm::sin(2 * glm::pi<float>() / N * i)}, {1.f, 0.2f, 0.8f}});
+        vertices.push_back(Vertex2DColor{{0.5 * glm::cos(2 * glm::pi<float>() / N * (i + 1)), 0.5 * glm::sin(2 * glm::pi<float>() / N * (i + 1))}, {1.f, 0.3f, 0.7f}});
+    }
     // puis on envoie les données
-    glBufferData(GL_ARRAY_BUFFER, 15 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * N * sizeof(Vertex2DColor), data(vertices), GL_STATIC_DRAW);
 
     // on debind pour éviter de modifier le vbo par erreur, meme fonction qu'au début mais avec 0
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -48,9 +59,9 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     // il faut indiquer où il va trouver les sommets à dessiner
-    glVertexAttribPointer(vertex_attr_position, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+    glVertexAttribPointer(vertex_attr_position, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2DColor), (const GLvoid*)(offsetof(Vertex2DColor, position)));
     // il faut indiquer où il va trouver les sommets à dessiner
-    glVertexAttribPointer(vertex_attr_color, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const GLvoid*)(2 * sizeof(GLfloat)));
+    glVertexAttribPointer(vertex_attr_color, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex2DColor), (const GLvoid*)(offsetof(Vertex2DColor, color)));
 
     // on debind encore le vbo
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -61,7 +72,6 @@ int main()
     // Declare your infinite update loop.
     ctx.update = [&]() {
         // DESSIN
-
         // on nettoie la fenetre
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -69,8 +79,7 @@ int main()
 
         glimac::bind_default_shader();
         shader.use();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
+        glDrawArrays(GL_TRIANGLES, 0, 3 * N);
         glBindVertexArray(0); // debind du vao
     };
 

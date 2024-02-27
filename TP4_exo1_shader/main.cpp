@@ -8,8 +8,8 @@ int main()
 
     // shader
     const p6::Shader shader = p6::load_shader(
-        "shaders/triangle.vs.glsl",
-        "shaders/triangle.fs.glsl"
+        "shaders/color2D.vs.glsl",
+        "shaders/color2D.fs.glsl"
     );
 
     // INITIALISATION
@@ -39,8 +39,8 @@ int main()
 
     // on va choisir l'attribut a activé, défini par un index
     // ici l'attribut est la position, on defini l'index à 0
-    static constexpr GLuint vertex_attr_position = 3;
-    static constexpr GLuint vertex_attr_color    = 8;
+    static constexpr GLuint vertex_attr_position = 0;
+    static constexpr GLuint vertex_attr_color    = 1;
     glEnableVertexAttribArray(vertex_attr_position);
     glEnableVertexAttribArray(vertex_attr_color);
 

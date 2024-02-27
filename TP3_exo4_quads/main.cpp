@@ -1,5 +1,12 @@
+#include <cstddef>
 #include "glimac/default_shader.hpp"
+#include "glm/glm.hpp"
 #include "p6/p6.h"
+
+struct Vertex2DColor {
+    glm::vec2 position;
+    glm::vec3 color;
+};
 
 int main()
 {
@@ -20,14 +27,17 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, vbo); // binding
 
     // on créé un tableau avec les coordonnées du triangle
-    GLfloat vertices[] = {
-        -0.5f, -0.5f, 1.f, 1.f, 0.f,
-        0.5f, -0.5f, 0.f, 1.f, 1.f,
-        0.0f, 0.5f, 1.f, 0.f, 1.f
+    Vertex2DColor vertices[] = {
+        Vertex2DColor{{-0.5f, -0.5f}, {1.f, 1.f, 0.f}}, // Premier sommet
+        Vertex2DColor{{-0.5f, 0.5f}, {0.f, 1.f, 1.f}},  // Deuxième sommet
+        Vertex2DColor{{0.5f, 0.5f}, {1.f, 0.f, 1.f}},   // Troisième sommet
+        Vertex2DColor{{-0.5f, -0.5f}, {1.f, 1.f, 0.f}}, // Premier sommet
+        Vertex2DColor{{0.5f, -0.5f}, {0.f, 1.f, 1.f}},  // Deuxième sommet
+        Vertex2DColor{{0.5f, 0.5f}, {1.f, 0.f, 1.f}}    // Troisième sommet
     };
 
     // puis on envoie les données
-    glBufferData(GL_ARRAY_BUFFER, 15 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(Vertex2DColor), vertices, GL_STATIC_DRAW);
 
     // on debind pour éviter de modifier le vbo par erreur, meme fonction qu'au début mais avec 0
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -48,9 +58,9 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     // il faut indiquer où il va trouver les sommets à dessiner
-    glVertexAttribPointer(vertex_attr_position, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+    glVertexAttribPointer(vertex_attr_position, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2DColor), (const GLvoid*)(offsetof(Vertex2DColor, position)));
     // il faut indiquer où il va trouver les sommets à dessiner
-    glVertexAttribPointer(vertex_attr_color, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const GLvoid*)(2 * sizeof(GLfloat)));
+    glVertexAttribPointer(vertex_attr_color, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex2DColor), (const GLvoid*)(offsetof(Vertex2DColor, color)));
 
     // on debind encore le vbo
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -61,7 +71,6 @@ int main()
     // Declare your infinite update loop.
     ctx.update = [&]() {
         // DESSIN
-
         // on nettoie la fenetre
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -69,8 +78,8 @@ int main()
 
         glimac::bind_default_shader();
         shader.use();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glDrawArrays(GL_TRIANGLES, 3, 3);
         glBindVertexArray(0); // debind du vao
     };
 
