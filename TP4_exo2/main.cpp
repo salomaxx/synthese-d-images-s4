@@ -63,10 +63,20 @@ int main()
     // et finalement on debind le vao
     glBindVertexArray(0);
 
-    GLint uniformLocation = glGetUniformLocation(shader.id(), "uTime");
+    GLint uTimeLocation = glGetUniformLocation(shader.id(), "uTime");
+    
+    if (uTimeLocation == -1)
+    {
+        std::cerr << "Warning: Uniform uTime not found in shader!" << '\n';
+    }
+
+    float uTime = 0.0f;
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
+
+        uTime += 10.0f;
+
         // DESSIN
 
         // on nettoie la fenetre
@@ -76,7 +86,7 @@ int main()
 
         glimac::bind_default_shader();
         shader.use();
-        glUniform1f(uniformLocation, 45.0f);
+        glUniform1f(uTimeLocation, uTime);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
