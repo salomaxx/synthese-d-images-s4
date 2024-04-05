@@ -1,10 +1,39 @@
 #include "glimac/default_shader.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "p6/p6.h"
 
 struct Vertex2DUV {
     glm::vec2 position;
     glm::vec2 textureCoordinates;
 };
+
+glm::mat3 translate(float tx, float ty)
+{
+    return glm::mat3(
+        glm::vec3(1, 0, 0),
+        glm::vec3(0, 1, 0),
+        glm::vec3(tx, ty, 1)
+    );
+}
+
+glm::mat3 scale(float sx, float sy)
+{
+    return glm::mat3(
+        glm::vec3(sx, 0, 0),
+        glm::vec3(0, sy, 0),
+        glm::vec3(0, 0, 1)
+    );
+}
+
+glm::mat3 rotate(float a)
+{
+    a = glm::radians(a);
+    return glm::mat3(
+        glm::vec3(cos(a), sin(a), 0),
+        glm::vec3(-sin(a), cos(a), 0),
+        glm::vec3(0, 0, 1)
+    );
+}
 
 int main()
 {
@@ -64,7 +93,7 @@ int main()
     glBindVertexArray(0);
 
     GLint uTimeLocation = glGetUniformLocation(shader.id(), "uTime");
-    
+
     if (uTimeLocation == -1)
     {
         std::cerr << "Warning: Uniform uTime not found in shader!" << '\n';
@@ -74,8 +103,9 @@ int main()
 
     // Declare your infinite update loop.
     ctx.update = [&]() {
-
-        uTime += 10.0f;
+        
+        float     angle          = uTime;
+        glm::mat3 rotationMatrix = rotate(angle);
 
         // DESSIN
 
@@ -86,7 +116,8 @@ int main()
 
         glimac::bind_default_shader();
         shader.use();
-        glUniform1f(uTimeLocation, uTime);
+        glUniformMatrix3fv(uTimeLocation, 1, GL_FALSE, glm::value_ptr(rotationMatrix));
+        //glUniform1f(uTimeLocation, uTime);
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
